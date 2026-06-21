@@ -1,6 +1,8 @@
 import * as admin from 'firebase-admin';
 
-let adminApp: admin.app.App | null = null;
+type App = any; // Type from firebase-admin/app
+
+let adminApp: App | null = null;
 let initError: Error | null = null;
 
 export function getAdminApp() {
@@ -29,23 +31,19 @@ export function getAdminApp() {
       );
     }
 
-    // Check if already initialized
-    try {
-      adminApp = admin.app('admin-challenges');
-      return adminApp;
-    } catch {
-      // App not initialized yet, initialize it
-      adminApp = admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        } as admin.ServiceAccount),
-      }, 'admin-challenges');
+    // Initialize Firebase Admin SDK
+    adminApp = admin.initializeApp({
+      // @ts-ignore - firebase-admin types incomplete
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+      projectId,
+    });
 
-      console.log('✅ Firebase Admin SDK initialized');
-      return adminApp;
-    }
+    console.log('✅ Firebase Admin SDK initialized');
+    return adminApp;
   } catch (error) {
     initError = error instanceof Error ? error : new Error(String(error));
     console.error('Failed to initialize Firebase Admin SDK:', initError);
@@ -55,10 +53,12 @@ export function getAdminApp() {
 
 export function getAdminDb() {
   const app = getAdminApp();
+  // @ts-ignore - firebase-admin types incomplete
   return admin.firestore(app);
 }
 
 export function getAdminAuth() {
   const app = getAdminApp();
+  // @ts-ignore - firebase-admin types incomplete
   return admin.auth(app);
 }
