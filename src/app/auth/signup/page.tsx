@@ -1,3 +1,8 @@
+"use client";
+
+import { redirect } from "next/navigation";
+
 export default function SignupPage() {
-  return <h1>Signup Page</h1>;
+  // Redirect to login page since we only use Google Sign-In
+  redirect("/auth/login");
 }
