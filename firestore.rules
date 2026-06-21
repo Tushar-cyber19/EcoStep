@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow all authenticated users full access to their own data
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Footprints - users can create their own, read/write their own
+    match /footprints/{doc=**} {
+      allow read: if request.auth.uid == resource.data.userId;
+      allow write: if request.auth.uid == resource.data.userId;
+      allow create: if request.auth.uid != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // User Challenges - users can create their own, read/write their own
+    match /userChallenges/{doc=**} {
+      allow read: if request.auth.uid == resource.data.userId;
+      allow write: if request.auth.uid == resource.data.userId;
+      allow create: if request.auth.uid != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // User Stats - users can manage their own
+    match /userStats/{userId} {
+      allow read: if request.auth.uid != null;
+      allow write: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
+    }
+
+    // Challenges - read-only for all authenticated users
+    match /challenges/{doc=**} {
+      allow read: if request.auth.uid != null;
+    }
+
+    // Leaderboard - read-only for all authenticated users
+    match /leaderboard/{doc=**} {
+      allow read: if request.auth.uid != null;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
